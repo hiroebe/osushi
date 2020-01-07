@@ -68,9 +68,9 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		return nil
 	}
 
-	screen.Fill(color.Black)
-	g.player.Draw(screen, g.scale)
+	screen.Fill(color.White)
 	g.ground.Draw(screen, g.scale)
+	g.player.Draw(screen, g.scale)
 	g.drawScore(screen)
 
 	ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS()))
@@ -116,7 +116,7 @@ func (g *Game) drawScore(screen *ebiten.Image) {
 	for i, t := range texts {
 		x := screenWidth - fontSize*len(t)
 		y := fontSize * (i + 2)
-		text.Draw(screen, t, arcadeFont, x, y, color.White)
+		text.Draw(screen, t, arcadeFont, x, y, color.Black)
 	}
 }
 

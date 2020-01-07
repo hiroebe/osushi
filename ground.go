@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	minMoutainWidth  = 128
-	minMoutainHeight = 64
-	maxMoutainWidth  = 256
-	maxMoutainHeight = 256
+	minMoutainWidth  = 200
+	minMoutainHeight = 100
+	maxMoutainWidth  = 500
+	maxMoutainHeight = 300
 )
 
 type Mountain struct {
