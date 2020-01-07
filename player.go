@@ -9,6 +9,11 @@ import (
 	"github.com/hajimehoshi/ebiten/inpututil"
 )
 
+const (
+	minVx   = 1
+	gravity = 0.1
+)
+
 type Player struct {
 	x, y      float64
 	vx, vy    float64

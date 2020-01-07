@@ -9,6 +9,13 @@ import (
 	"github.com/hajimehoshi/ebiten/ebitenutil"
 )
 
+const (
+	minMoutainWidth  = 128
+	minMoutainHeight = 64
+	maxMoutainWidth  = 256
+	maxMoutainHeight = 256
+)
+
 type Mountain struct {
 	startX        float64
 	width, height float64
