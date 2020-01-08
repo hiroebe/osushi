@@ -149,6 +149,7 @@ func (p *Player) Draw(screen *ebiten.Image, scale float64) {
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(-float64(w)/2, -float64(h))
 	opts.GeoM.Rotate(math.Atan(grad))
+	opts.GeoM.Scale(1/scale, 1/scale)
 	opts.GeoM.Translate(x, y)
 
 	screen.DrawImage(p.img, opts)
