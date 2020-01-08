@@ -18,7 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ebiten.SetWindowTitle("title")
+	ebiten.SetWindowTitle("Osushi")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
 	}

@@ -142,7 +142,7 @@ func (p *Player) land(grad float64) {
 func (p *Player) Draw(screen *ebiten.Image, scale float64) {
 	w, h := p.img.Size()
 	x := playerOffset / scale
-	y := screenHeight - p.y/scale + float64(h)/10
+	y := float64(screenHeight) - p.y/scale + float64(h)/10
 	grad := -p.vy / p.vx
 
 	opts := &ebiten.DrawImageOptions{}

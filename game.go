@@ -14,11 +14,14 @@ import (
 )
 
 const (
-	screenWidth  = 640
-	screenHeight = 480
 	fontSize     = 16
 	playerOffset = 32
 	groundY      = 16
+)
+
+var (
+	screenWidth  int
+	screenHeight int
 )
 
 var arcadeFont font.Face
@@ -56,7 +59,7 @@ func NewGame() (*Game, error) {
 
 func (g *Game) Update(screen *ebiten.Image) error {
 	g.player.Update(g.ground.At(g.player.x))
-	g.scale = (g.player.y + playerOffset*4) / screenHeight
+	g.scale = (g.player.y + playerOffset*4) / float64(screenHeight)
 	if g.scale < 1 {
 		g.scale = 1
 	}
@@ -115,11 +118,13 @@ func (g *Game) drawScore(screen *ebiten.Image) {
 	}
 	for i, t := range texts {
 		x := screenWidth - fontSize*len(t)
-		y := fontSize * (i + 2)
+		y := fontSize * (i + 3)
 		text.Draw(screen, t, arcadeFont, x, y, color.Black)
 	}
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
+	screenWidth = outsideWidth
+	screenHeight = outsideHeight
 	return screenWidth, screenHeight
 }

@@ -84,7 +84,7 @@ func (g *Ground) Update(screenX, scale float64) {
 	}
 	for {
 		lastX := g.moutains[len(g.moutains)-1].EndX()
-		if lastX >= screenWidth*scale+screenX {
+		if lastX >= float64(screenWidth)*scale+screenX {
 			break
 		}
 		g.moutains = append(g.moutains, NewRandomMountain(lastX))
@@ -103,7 +103,7 @@ func (g *Ground) Draw(screen *ebiten.Image, scale float64) {
 			}
 		}
 	}
-	ebitenutil.DrawRect(screen, 0, screenHeight-groundY/scale, screenWidth, groundY/scale, clr)
+	ebitenutil.DrawRect(screen, 0, float64(screenHeight)-groundY/scale, float64(screenWidth), groundY/scale, clr)
 	for _, m := range g.moutains {
 		g.drawMoutain(screen, m, scale)
 	}
