@@ -153,8 +153,17 @@ func (p *Player) Draw(screen *ebiten.Image, scale float64) {
 	screen.DrawImage(p.img, opts)
 }
 
+var touching bool
+
 func isKeyPressed() bool {
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
+		return true
+	}
+	if ebiten.IsMouseButtonPressed(ebiten.MouseButtonLeft) {
+		return true
+	}
+	if len(ebiten.TouchIDs()) > 0 {
+		touching = true
 		return true
 	}
 	return false
@@ -162,6 +171,13 @@ func isKeyPressed() bool {
 
 func isKeyJustReleased() bool {
 	if inpututil.IsKeyJustReleased(ebiten.KeySpace) {
+		return true
+	}
+	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
+		return true
+	}
+	if touching && len(ebiten.TouchIDs()) == 0 {
+		touching = false
 		return true
 	}
 	return false
