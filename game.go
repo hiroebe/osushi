@@ -42,11 +42,8 @@ type Game struct {
 	player           *Player
 	ground           *Ground
 	scale            float64
-	maxHeight        int
-	maxHeightRecord  int
-	jumpLendth       int
+	jumpHeightRecord int
 	jumpLendthRecord int
-	jumpStartX       int
 }
 
 func NewGame() (*Game, error) {
@@ -64,8 +61,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		g.scale = 1
 	}
 	g.ground.Update(g.player.x-playerOffset, g.scale)
-	g.updateHeight()
-	g.updateLength()
+	g.updateRecord()
 
 	if ebiten.IsDrawingSkipped() {
 		return nil
@@ -82,39 +78,19 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	return nil
 }
 
-func (g *Game) updateHeight() {
-	if !g.player.isJumping {
-		g.maxHeight = 0
-		return
+func (g *Game) updateRecord() {
+	if h := int(g.player.jumpHeight); h > g.jumpHeightRecord {
+		g.jumpHeightRecord = h
 	}
-	h := int(g.player.y) - groundY
-	if h > g.maxHeight {
-		g.maxHeight = h
-		if h > g.maxHeightRecord {
-			g.maxHeightRecord = h
-		}
-	}
-}
-
-func (g *Game) updateLength() {
-	if !g.player.isJumping {
-		g.jumpLendth = 0
-		g.jumpStartX = 0
-		return
-	}
-	if g.jumpStartX <= 0 {
-		g.jumpStartX = int(g.player.x)
-	}
-	g.jumpLendth = int(g.player.x) - g.jumpStartX
-	if g.jumpLendth > g.jumpLendthRecord {
-		g.jumpLendthRecord = g.jumpLendth
+	if l := int(g.player.jumpLength); l > g.jumpLendthRecord {
+		g.jumpLendthRecord = l
 	}
 }
 
 func (g *Game) drawScore(screen *ebiten.Image) {
 	texts := []string{
-		fmt.Sprintf("Height: %6d (%6d)", g.maxHeight, g.maxHeightRecord),
-		fmt.Sprintf("Length: %6d (%6d)", g.jumpLendth, g.jumpLendthRecord),
+		fmt.Sprintf("Height: %6d (%6d)", int(g.player.jumpHeight), g.jumpHeightRecord),
+		fmt.Sprintf("Length: %6d (%6d)", int(g.player.jumpLength), g.jumpLendthRecord),
 	}
 	for i, t := range texts {
 		x := screenWidth - fontSize*len(t)

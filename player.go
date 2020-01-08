@@ -13,9 +13,9 @@ import (
 )
 
 const (
-	minVx    = 1
-	gravity  = 0.1
-	friction = 0.045
+	minV     = 2
+	gravity  = 0.05
+	friction = 0.03
 )
 
 var (
@@ -56,55 +56,90 @@ type Player struct {
 	x, y      float64
 	vx, vy    float64
 	isJumping bool
+
+	jumpHeight float64
+	jumpLength float64
+	jumpStartX float64
+
 	img       *ebiten.Image
 	imgFrames int
 }
 
 func (p *Player) Update(gy, grad float64) {
-	p.updateV(grad)
+	obl := math.Sqrt(1 + grad*grad)
 
-	if p.vx < minVx {
-		p.vx = minVx
-	}
+	p.updateV(grad, obl)
+
 	p.x += p.vx
 	p.y += p.vy
 
 	if !p.isJumping || p.y < gy {
 		p.y = gy
 		if p.isJumping {
-			p.land(grad)
+			p.land(grad, obl)
 		}
 	}
 
+	p.updateJumpScore()
 	p.updateImg()
 }
 
-func (p *Player) updateV(grad float64) {
+func (p *Player) updateV(grad, obl float64) {
 	g := -gravity
-	fric := friction
 	if isKeyPressed() {
-		g *= 2
-		fric /= 2
+		g *= 3
 	}
 	if p.isJumping {
 		p.vy += g
 		return
 	}
 
-	obl := math.Sqrt(1 + grad*grad)
-	v := math.Sqrt(p.vx*p.vx+p.vy*p.vy) - fric/obl
+	v := math.Sqrt(p.vx*p.vx+p.vy*p.vy) + g*grad/obl - friction/obl
+	if v < minV {
+		v = minV
+	}
 	p.vx = v / obl
 	p.vy = v * grad / obl
 
-	if isKeyJustReleased() && grad >= -0.1 {
-		p.vy += gravity
-		p.isJumping = true
+	if isKeyJustReleased() {
+		p.jump(grad, obl)
 		return
 	}
+}
 
-	g *= grad / obl
-	p.vx += g / obl
-	p.vy += g * grad / obl
+func (p *Player) jump(grad, obl float64) {
+	p.isJumping = true
+	p.jumpStartX = p.x
+
+	p.vy += gravity / obl
+}
+
+func (p *Player) land(grad, obl float64) {
+	p.isJumping = false
+
+	dv := (p.vx + p.vy*grad) / obl
+	if dv < 0 {
+		p.vx = 0
+		p.vy = 0
+		return
+	}
+	if p.jumpLength > minMoutainWidth {
+		dv *= 1.1
+	}
+	p.vx = dv / obl
+	p.vy = dv * grad / obl
+}
+
+func (p *Player) updateJumpScore() {
+	if !p.isJumping {
+		p.jumpHeight = 0
+		p.jumpLength = 0
+		return
+	}
+	p.jumpLength = p.x - p.jumpStartX
+	if p.y > p.jumpHeight {
+		p.jumpHeight = p.y
+	}
 }
 
 func (p *Player) updateImg() {
@@ -127,20 +162,6 @@ func (p *Player) updateImg() {
 		p.img = gopherImageFly1
 	}
 
-}
-
-func (p *Player) land(grad float64) {
-	p.isJumping = false
-	obl := math.Sqrt(1 + grad*grad)
-	dv := (p.vx + p.vy*grad) / obl
-	if dv < 0 {
-		p.vx = 0
-		p.vy = 0
-		return
-	}
-	dv *= 1.1
-	p.vx = dv / obl
-	p.vy = dv * grad / obl
 }
 
 func (p *Player) Draw(screen *ebiten.Image, scale float64) {
