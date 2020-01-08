@@ -18,6 +18,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	ebiten.SetWindowResizable(true)
 	ebiten.SetWindowTitle("Osushi")
 	if err := ebiten.RunGame(game); err != nil {
 		log.Fatal(err)
