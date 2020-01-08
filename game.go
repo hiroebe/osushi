@@ -15,7 +15,7 @@ import (
 
 const (
 	fontSize     = 16
-	playerOffset = 32
+	playerOffset = 64
 	groundY      = 16
 )
 
