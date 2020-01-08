@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	minVx   = 1
-	gravity = 0.1
+	minVx    = 1
+	gravity  = 0.1
+	friction = 0.045
 )
 
 var (
@@ -80,8 +81,10 @@ func (p *Player) Update(gy, grad float64) {
 
 func (p *Player) updateV(grad float64) {
 	g := -gravity
+	fric := friction
 	if isKeyPressed() {
 		g *= 2
+		fric /= 2
 	}
 	if p.isJumping {
 		p.vy += g
@@ -89,7 +92,7 @@ func (p *Player) updateV(grad float64) {
 	}
 
 	obl := math.Sqrt(1 + grad*grad)
-	v := math.Sqrt(p.vx*p.vx + p.vy*p.vy)
+	v := math.Sqrt(p.vx*p.vx+p.vy*p.vy) - fric/obl
 	p.vx = v / obl
 	p.vy = v * grad / obl
 
