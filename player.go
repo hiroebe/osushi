@@ -2,6 +2,7 @@ package osushi
 
 import (
 	"image"
+	"log"
 	"math"
 	"net/http"
 
@@ -26,7 +27,7 @@ var (
 func init() {
 	statikFs, err := fs.New()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	gopherImageNormal = mustLoadImage(statikFs, "/gopher-normal.png")
 	gopherImageAcceralate = mustLoadImage(statikFs, "/gopher-acceralate.png")
@@ -37,15 +38,15 @@ func init() {
 func mustLoadImage(fs http.FileSystem, name string) *ebiten.Image {
 	f, err := fs.Open(name)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	img, _, err := image.Decode(f)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterDefault)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	return ebitenImg
 }

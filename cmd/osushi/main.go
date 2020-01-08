@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -15,10 +16,10 @@ func init() {
 func main() {
 	game, err := osushi.NewGame()
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	ebiten.SetWindowTitle("title")
 	if err := ebiten.RunGame(game); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 }

@@ -3,7 +3,7 @@ module github.com/hiroebe/osushi
 go 1.13
 
 require (
-	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/hajimehoshi/ebiten v1.11.0-alpha.2.0.20200106104406-90ccd4c440bf
 	github.com/rakyll/statik v0.1.6
 	golang.org/x/exp v0.0.0-20191227195350-da58074b4299 // indirect
