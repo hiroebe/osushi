@@ -135,6 +135,7 @@ func (p *Player) land(grad float64) {
 		p.vy = 0
 		return
 	}
+	dv *= 1.1
 	p.vx = dv / obl
 	p.vy = dv * grad / obl
 }
