@@ -15,7 +15,7 @@ import (
 const (
 	minV     = 2
 	gravity  = 0.05
-	friction = 0.03
+	friction = 0.02
 )
 
 var (
