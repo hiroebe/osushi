@@ -29,15 +29,19 @@ type JumpSound struct {
 	timer  *time.Timer
 }
 
-func (s *JumpSound) Start() {
-	if s.player == nil {
-		var err error
-		s.player, err = audio.NewPlayer(audio.CurrentContext(), s.wave(440))
-		if err != nil {
-			log.Println(err)
-			return
-		}
+func NewJumpSound() *JumpSound {
+	s := &JumpSound{}
+
+	var err error
+	s.player, err = audio.NewPlayer(audio.CurrentContext(), s.wave(440))
+	if err != nil {
+		log.Println(err)
+		return nil
 	}
+	return s
+}
+
+func (s *JumpSound) Start() {
 	s.player.Rewind()
 	s.player.SetVolume(0)
 	s.timer = time.AfterFunc(100*time.Millisecond, func() {
@@ -79,25 +83,26 @@ type NewRecordSound struct {
 	players map[float64]*audio.Player
 }
 
-func (s *NewRecordSound) Update() {
-	if s.players == nil {
-		s.players = make(map[float64]*audio.Player)
+func NewNewRecordSound() *NewRecordSound {
+	s := &NewRecordSound{
+		freqIdx: 0,
+		octave:  1,
+		players: make(map[float64]*audio.Player, 32),
 	}
-	if s.octave == 0 {
-		s.Reset()
+	for _, freq := range baseFreq {
+		for i := 1; i <= 3; i++ {
+			s.createPlayer(freq * float64(i))
+		}
 	}
 
+	return s
+}
+
+func (s *NewRecordSound) Update() {
 	freq := baseFreq[s.freqIdx] * float64(s.octave)
 	p, ok := s.players[freq]
 	if !ok {
-		var err error
-		p, err = audio.NewPlayer(audio.CurrentContext(), s.wave(freq))
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		s.players[freq] = p
+		p = s.createPlayer(freq)
 	}
 	p.Rewind()
 	p.Play()
@@ -115,6 +120,17 @@ func (s *NewRecordSound) Update() {
 func (s *NewRecordSound) Reset() {
 	s.freqIdx = 0
 	s.octave = 1
+}
+
+func (s *NewRecordSound) createPlayer(freq float64) *audio.Player {
+	p, err := audio.NewPlayer(audio.CurrentContext(), s.wave(freq))
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	s.players[freq] = p
+	return p
 }
 
 func (s *NewRecordSound) wave(freq float64) *Wave {

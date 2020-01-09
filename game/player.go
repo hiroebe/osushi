@@ -69,7 +69,7 @@ type Player struct {
 
 func (p *Player) Update(gy, grad float64) {
 	if p.sound == nil {
-		p.sound = &JumpSound{}
+		p.sound = NewJumpSound()
 	}
 
 	obl := math.Sqrt(1 + grad*grad)

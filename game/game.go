@@ -57,7 +57,7 @@ func NewGame() (*Game, error) {
 		player:         &Player{},
 		ground:         &Ground{},
 		scale:          1,
-		newRecordSound: &NewRecordSound{},
+		newRecordSound: NewNewRecordSound(),
 	}, nil
 }
 
