@@ -37,12 +37,11 @@ func (s *JumpSound) Start() {
 			log.Println(err)
 			return
 		}
-		s.player.SetVolume(0.3)
 	}
 	s.player.Rewind()
 	s.player.SetVolume(0)
 	s.timer = time.AfterFunc(100*time.Millisecond, func() {
-		s.player.SetVolume(0.3)
+		s.player.SetVolume(1)
 	})
 	s.player.Play()
 }
@@ -97,7 +96,6 @@ func (s *NewRecordSound) Update() {
 			log.Println(err)
 			return
 		}
-		p.SetVolume(0.5)
 
 		s.players[freq] = p
 	}
