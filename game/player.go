@@ -176,14 +176,14 @@ func (p *Player) updateImg() {
 
 func (p *Player) Draw(screen *ebiten.Image, scale float64) {
 	w, h := p.img.Size()
-	x := playerOffset / scale
-	y := float64(screenHeight) - p.y/scale + float64(h)/10
+	x := playerOffset * scale
+	y := float64(screenHeight) - p.y*scale + float64(h)/10
 	grad := -p.vy / p.vx
 
 	opts := &ebiten.DrawImageOptions{}
 	opts.GeoM.Translate(-float64(w)/2, -float64(h))
 	opts.GeoM.Rotate(math.Atan(grad))
-	opts.GeoM.Scale(1/scale, 1/scale)
+	opts.GeoM.Scale(scale, scale)
 	opts.GeoM.Translate(x, y)
 
 	screen.DrawImage(p.img, opts)

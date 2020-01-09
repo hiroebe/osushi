@@ -63,8 +63,8 @@ func NewGame() (*Game, error) {
 
 func (g *Game) Update(screen *ebiten.Image) error {
 	g.player.Update(g.ground.At(g.player.x))
-	g.scale = (g.player.y + playerOffset*4) / float64(screenHeight)
-	if g.scale < 1 {
+	g.scale = float64(screenHeight) / (g.player.y + playerOffset*4)
+	if g.scale > 1 {
 		g.scale = 1
 	}
 	g.ground.Update(g.player.x-playerOffset, g.scale)

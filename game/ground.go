@@ -124,7 +124,7 @@ func (g *Ground) Update(screenX, scale float64) {
 	}
 	for {
 		lastX := g.moutains[len(g.moutains)-1].EndX()
-		if lastX >= float64(screenWidth)*scale+screenX {
+		if lastX >= float64(screenWidth)/scale+screenX {
 			break
 		}
 		g.moutains = append(g.moutains, NewRandomMountain(lastX))
@@ -167,16 +167,16 @@ func (g *Ground) checkImgSize(img *ebiten.Image, w, h int) bool {
 
 func (g *Ground) drawGroundPattern(dstImg *ebiten.Image, scale float64) {
 	w, h := dstImg.Size()
-	offset := float64((w+int(g.screenX))%w) / scale
+	offset := float64((w+int(g.screenX))%w) * scale
 	srcW, srcH := groundBaseImg.Size()
-	srcWs := float64(srcW) / scale
-	srcHs := float64(srcH) / scale
+	srcWs := float64(srcW) * scale
+	srcHs := float64(srcH) * scale
 	for x := 0.0; x <= float64(w)/srcWs+offset; x++ {
 		for y := 0.0; y <= float64(h)/srcHs; y++ {
 			dx := x*srcWs - offset
 			dy := float64(h) - (y+1)*srcHs
 			opts := &ebiten.DrawImageOptions{}
-			opts.GeoM.Scale(1/scale, 1/scale)
+			opts.GeoM.Scale(scale, scale)
 			opts.GeoM.Translate(dx, dy)
 			dstImg.DrawImage(groundBaseImg, opts)
 		}
@@ -184,8 +184,8 @@ func (g *Ground) drawGroundPattern(dstImg *ebiten.Image, scale float64) {
 }
 
 func (g *Ground) drawGroundSurface(dstImg *ebiten.Image, scale float64) {
-	y := float64(screenHeight) - groundY/scale
-	ebitenutil.DrawRect(dstImg, 0, y, float64(screenWidth), groundY/scale, groundSurfaceColor)
+	y := float64(screenHeight) - groundY*scale
+	ebitenutil.DrawRect(dstImg, 0, y, float64(screenWidth), groundY*scale, groundSurfaceColor)
 	for _, m := range g.moutains {
 		g.drawMoutain(dstImg, m, scale, 1, groundY)
 	}
@@ -193,17 +193,17 @@ func (g *Ground) drawGroundSurface(dstImg *ebiten.Image, scale float64) {
 
 func (g *Ground) drawUnderground(dstImg *ebiten.Image, scale float64) {
 	for _, m := range g.moutains {
-		g.drawMoutain(dstImg, m, scale, 1.2, 0)
+		g.drawMoutain(dstImg, m, scale, 0.8, 0)
 	}
 }
 
 func (g *Ground) drawMoutain(screen *ebiten.Image, m *Mountain, scale, mountainScale, offsetY float64) {
 	w, h := moutainBaseImg.Size()
-	x := (m.StartX()-g.screenX)/scale + m.Width()*(1-1/mountainScale)/scale/2
-	y := float64(screenHeight) - offsetY/scale - m.Height()/scale/mountainScale
+	x := (m.StartX()-g.screenX)*scale + m.Width()*(1-mountainScale)*scale/2
+	y := float64(screenHeight) - offsetY*scale - m.Height()*scale*mountainScale
 
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(m.Width()/float64(w)/scale/mountainScale, m.Height()/float64(h)/scale/mountainScale)
+	opts.GeoM.Scale(m.Width()/float64(w)*scale*mountainScale, m.Height()/float64(h)*scale*mountainScale)
 	opts.GeoM.Translate(x, y)
 	screen.DrawImage(moutainBaseImg, opts)
 }
