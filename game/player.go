@@ -45,7 +45,7 @@ func mustLoadImage(fs http.FileSystem, name string) *ebiten.Image {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterDefault)
+	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterLinear)
 	if err != nil {
 		log.Fatal(err)
 	}
