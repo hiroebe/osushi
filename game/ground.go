@@ -42,13 +42,22 @@ func initMountainBaseImg() {
 }
 
 func initGroundBaseImg() {
-	const size = 32
-	const r = 4
+	const (
+		size     = 128
+		cellSize = 32
+		r        = 4
+	)
 	groundBaseImg, _ = ebiten.NewImage(size, size, ebiten.FilterDefault)
 	groundBaseImg.Fill(undergroundColor1)
-	for dx := -r; dx <= r; dx++ {
-		for dy := -r; dy <= r; dy++ {
-			groundBaseImg.Set(size/2+dx, size/2+dy, undergroundColor2)
+	for i := 0; i < size/cellSize; i++ {
+		for j := 0; j < size/cellSize; j++ {
+			centerX := cellSize*i + cellSize/2
+			centerY := cellSize*j + cellSize/2
+			for dx := -r; dx <= r; dx++ {
+				for dy := -r; dy <= r; dy++ {
+					groundBaseImg.Set(centerX+dx, centerY+dy, undergroundColor2)
+				}
+			}
 		}
 	}
 }
@@ -166,16 +175,21 @@ func (g *Ground) checkImgSize(img *ebiten.Image, w, h int) bool {
 }
 
 func (g *Ground) drawGroundPattern(dstImg *ebiten.Image, scale float64) {
-	w, h := dstImg.Size()
-	offset := float64((w+int(g.screenX))%w) * scale
+	dw, dh := dstImg.Size()
 	srcW, srcH := groundBaseImg.Size()
-	srcWs := float64(srcW) * scale
-	srcHs := float64(srcH) * scale
-	for x := 0.0; x <= float64(w)/srcWs+offset; x++ {
-		for y := 0.0; y <= float64(h)/srcHs; y++ {
-			dx := x*srcWs - offset
-			dy := float64(h) - (y+1)*srcHs
-			opts := &ebiten.DrawImageOptions{}
+	offset := float64((dw+int(g.screenX))%dw%srcW) * scale
+	sw := float64(srcW) * scale
+	sh := float64(srcH) * scale
+
+	lastX := (float64(dw) + offset) / sw
+	lastY := float64(dh) / sh
+
+	opts := &ebiten.DrawImageOptions{}
+	for x := 0.0; x <= lastX; x++ {
+		for y := 0.0; y <= lastY; y++ {
+			dx := x*sw - offset
+			dy := float64(dh) - (y+1)*sh
+			opts.GeoM.Reset()
 			opts.GeoM.Scale(scale, scale)
 			opts.GeoM.Translate(dx, dy)
 			dstImg.DrawImage(groundBaseImg, opts)
