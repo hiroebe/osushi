@@ -63,9 +63,15 @@ type Player struct {
 
 	img       *ebiten.Image
 	imgFrames int
+
+	sound *JumpSound
 }
 
 func (p *Player) Update(gy, grad float64) {
+	if p.sound == nil {
+		p.sound = &JumpSound{}
+	}
+
 	obl := math.Sqrt(1 + grad*grad)
 
 	p.updateV(grad, obl)
@@ -108,6 +114,8 @@ func (p *Player) updateV(grad, obl float64) {
 }
 
 func (p *Player) jump(grad, obl float64) {
+	p.sound.Start()
+
 	p.isJumping = true
 	p.jumpStartX = p.x
 
@@ -115,6 +123,8 @@ func (p *Player) jump(grad, obl float64) {
 }
 
 func (p *Player) land(grad, obl float64) {
+	p.sound.Stop()
+
 	p.isJumping = false
 
 	dv := (p.vx + p.vy*grad) / obl

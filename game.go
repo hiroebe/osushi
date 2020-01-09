@@ -44,13 +44,16 @@ type Game struct {
 	scale            float64
 	jumpHeightRecord int
 	jumpLendthRecord int
+
+	newRecordSound *NewRecordSound
 }
 
 func NewGame() (*Game, error) {
 	return &Game{
-		player: &Player{},
-		ground: &Ground{},
-		scale:  1,
+		player:         &Player{},
+		ground:         &Ground{},
+		scale:          1,
+		newRecordSound: &NewRecordSound{},
 	}, nil
 }
 
@@ -80,7 +83,12 @@ func (g *Game) Update(screen *ebiten.Image) error {
 
 func (g *Game) updateRecord() {
 	if h := int(g.player.jumpHeight); h > g.jumpHeightRecord {
+		if h/100 > g.jumpHeightRecord/100 {
+			g.newRecordSound.Update()
+		}
 		g.jumpHeightRecord = h
+	} else if h == 0 {
+		g.newRecordSound.Reset()
 	}
 	if l := int(g.player.jumpLength); l > g.jumpLendthRecord {
 		g.jumpLendthRecord = l
