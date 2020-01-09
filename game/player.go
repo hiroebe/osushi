@@ -45,7 +45,7 @@ func mustLoadImage(fs http.FileSystem, name string) *ebiten.Image {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterLinear)
+	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterDefault)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,6 +181,7 @@ func (p *Player) Draw(screen *ebiten.Image, scale float64) {
 	grad := -p.vy / p.vx
 
 	opts := &ebiten.DrawImageOptions{}
+	opts.Filter = ebiten.FilterLinear
 	opts.GeoM.Translate(-float64(w)/2, -float64(h))
 	opts.GeoM.Rotate(math.Atan(grad))
 	opts.GeoM.Scale(scale, scale)
