@@ -126,10 +126,9 @@ func (s *NewRecordSound) wave(freq float64) *Wave {
 }
 
 type Wave struct {
-	freq      float64
-	f         func(x, lambda float64) float64
-	pos       int64
-	remaining []byte
+	freq float64
+	f    func(x, lambda float64) float64
+	pos  int64
 }
 
 func NewWave(freq float64, f func(x, lambda float64) float64) *Wave {
@@ -140,34 +139,20 @@ func NewWave(freq float64, f func(x, lambda float64) float64) *Wave {
 }
 
 func (w *Wave) Read(buf []byte) (int, error) {
-	if len(w.remaining) > 0 {
-		n := copy(buf, w.remaining)
-		w.remaining = w.remaining[n:]
-		return n, nil
-	}
-
-	fullBufLen := len(buf)
-	if mod := fullBufLen % 4; mod > 0 {
-		fullBufLen += 4 - mod
-	}
-	fullBuf := make([]byte, fullBufLen)
-
+	n := len(buf) / 4
 	p := w.pos / 4
-	for i := 0; i < fullBufLen/4; i++ {
+	for i := 0; i < n; i++ {
 		val := w.f(float64(p), float64(sampleRate)/w.freq)
 		b := int16(val * 0.3 * math.MaxInt16)
 		idx := i * 4
-		fullBuf[idx] = byte(b)
-		fullBuf[idx+1] = byte(b >> 8)
-		fullBuf[idx+2] = byte(b)
-		fullBuf[idx+3] = byte(b >> 8)
+		buf[idx] = byte(b)
+		buf[idx+1] = byte(b >> 8)
+		buf[idx+2] = byte(b)
+		buf[idx+3] = byte(b >> 8)
 		p++
 	}
 
-	w.pos += int64(fullBufLen)
-
-	n := copy(buf, fullBuf)
-	w.remaining = fullBuf[n:]
+	w.pos += int64(n)
 
 	return n, nil
 }
@@ -181,7 +166,6 @@ func (w *Wave) Seek(offset int64, whence int) (int64, error) {
 	case io.SeekEnd:
 		return 0, errors.New("SeekEnd: End of wave is not defined")
 	}
-	w.remaining = nil
 
 	return w.pos, nil
 }
