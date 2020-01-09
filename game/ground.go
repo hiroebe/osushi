@@ -1,4 +1,4 @@
-package osushi
+package game
 
 import (
 	"image/color"

@@ -1,9 +1,11 @@
-package osushi
+package game
 
 import (
 	"fmt"
 	"image/color"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten"
@@ -27,6 +29,8 @@ var (
 var arcadeFont font.Face
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
+
 	tt, err := truetype.Parse(fonts.ArcadeN_ttf)
 	if err != nil {
 		log.Fatal(err)

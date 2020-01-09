@@ -2,19 +2,13 @@ package main
 
 import (
 	"log"
-	"math/rand"
-	"time"
 
 	"github.com/hajimehoshi/ebiten"
-	"github.com/hiroebe/osushi"
+	"github.com/hiroebe/osushi/game"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func main() {
-	game, err := osushi.NewGame()
+	game, err := game.NewGame()
 	if err != nil {
 		log.Fatal(err)
 	}

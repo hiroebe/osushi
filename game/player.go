@@ -1,4 +1,4 @@
-package osushi
+package game
 
 import (
 	"image"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
-	_ "github.com/hiroebe/osushi/statik"
+	_ "github.com/hiroebe/osushi/game/statik"
 	"github.com/rakyll/statik/fs"
 )
 
