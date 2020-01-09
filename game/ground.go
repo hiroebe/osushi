@@ -16,6 +16,43 @@ const (
 	maxMoutainHeight = 300
 )
 
+var (
+	moutainBaseImg *ebiten.Image
+	groundBaseImg  *ebiten.Image
+
+	groundSurfaceColor = color.NRGBA{0x00, 0x99, 0x00, 0xff}
+	undergroundColor1  = color.NRGBA{0xcc, 0x99, 0x00, 0xff}
+	undergroundColor2  = color.NRGBA{0x99, 0x66, 0x00, 0xff}
+)
+
+func init() {
+	initMountainBaseImg()
+	initGroundBaseImg()
+}
+
+func initMountainBaseImg() {
+	const size = 512
+	moutainBaseImg, _ = ebiten.NewImage(size, size, ebiten.FilterDefault)
+	for x := 0; x < size; x++ {
+		y := int(float64(size) / 2 * (1 + math.Cos(2*math.Pi/float64(size)*float64(x))))
+		for y := y; y < size; y++ {
+			moutainBaseImg.Set(x, y, groundSurfaceColor)
+		}
+	}
+}
+
+func initGroundBaseImg() {
+	const size = 32
+	const r = 4
+	groundBaseImg, _ = ebiten.NewImage(size, size, ebiten.FilterDefault)
+	groundBaseImg.Fill(undergroundColor1)
+	for dx := -r; dx <= r; dx++ {
+		for dy := -r; dy <= r; dy++ {
+			groundBaseImg.Set(size/2+dx, size/2+dy, undergroundColor2)
+		}
+	}
+}
+
 type Mountain struct {
 	startX        float64
 	width, height float64
@@ -57,7 +94,10 @@ func (m *Mountain) At(x float64) (y, grad float64) {
 type Ground struct {
 	moutains []*Mountain
 	screenX  float64
-	baseImg  *ebiten.Image
+
+	groundPatternImg *ebiten.Image
+	groundSurfaceImg *ebiten.Image
+	undergroundImg   *ebiten.Image
 }
 
 func (g *Ground) At(x float64) (y, grad float64) {
@@ -92,29 +132,78 @@ func (g *Ground) Update(screenX, scale float64) {
 }
 
 func (g *Ground) Draw(screen *ebiten.Image, scale float64) {
-	clr := color.NRGBA{0x00, 0xff, 0x00, 0xff}
-	if g.baseImg == nil {
-		w, h := screen.Size()
-		g.baseImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
-		for x := 0; x < w; x++ {
-			y := int(float64(h) / 2 * (1 + math.Cos(2*math.Pi/float64(w)*float64(x))))
-			for y := y; y < h; y++ {
-				g.baseImg.Set(x, y, clr)
-			}
-		}
+	w, h := screen.Size()
+	if g.groundPatternImg == nil || !g.checkImgSize(g.groundPatternImg, w, h) {
+		g.groundPatternImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
 	}
-	ebitenutil.DrawRect(screen, 0, float64(screenHeight)-groundY/scale, float64(screenWidth), groundY/scale, clr)
-	for _, m := range g.moutains {
-		g.drawMoutain(screen, m, scale)
+	if g.groundSurfaceImg == nil || !g.checkImgSize(g.groundSurfaceImg, w, h) {
+		g.groundSurfaceImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
+	}
+	if g.undergroundImg == nil || !g.checkImgSize(g.undergroundImg, w, h) {
+		g.undergroundImg, _ = ebiten.NewImage(w, h, ebiten.FilterDefault)
+	}
+	g.groundPatternImg.Clear()
+	g.groundSurfaceImg.Clear()
+	g.undergroundImg.Clear()
+
+	g.drawGroundPattern(g.groundPatternImg, scale)
+	g.drawGroundSurface(g.groundSurfaceImg, scale)
+	g.drawUnderground(g.undergroundImg, scale)
+
+	opts := &ebiten.DrawImageOptions{}
+
+	opts.CompositeMode = ebiten.CompositeModeSourceAtop
+	g.undergroundImg.DrawImage(g.groundPatternImg, opts)
+
+	opts.CompositeMode = ebiten.CompositeModeSourceOver
+	screen.DrawImage(g.groundSurfaceImg, &ebiten.DrawImageOptions{})
+	screen.DrawImage(g.undergroundImg, &ebiten.DrawImageOptions{})
+}
+
+func (g *Ground) checkImgSize(img *ebiten.Image, w, h int) bool {
+	w0, h0 := img.Size()
+	return w == w0 && h == h0
+}
+
+func (g *Ground) drawGroundPattern(dstImg *ebiten.Image, scale float64) {
+	w, h := dstImg.Size()
+	offset := float64((w+int(g.screenX))%w) / scale
+	srcW, srcH := groundBaseImg.Size()
+	srcWs := float64(srcW) / scale
+	srcHs := float64(srcH) / scale
+	for x := 0.0; x <= float64(w)/srcWs+offset; x++ {
+		for y := 0.0; y <= float64(h)/srcHs; y++ {
+			dx := x*srcWs - offset
+			dy := float64(h) - (y+1)*srcHs
+			opts := &ebiten.DrawImageOptions{}
+			opts.GeoM.Scale(1/scale, 1/scale)
+			opts.GeoM.Translate(dx, dy)
+			dstImg.DrawImage(groundBaseImg, opts)
+		}
 	}
 }
 
-func (g *Ground) drawMoutain(screen *ebiten.Image, m *Mountain, scale float64) {
-	w, h := g.baseImg.Size()
+func (g *Ground) drawGroundSurface(dstImg *ebiten.Image, scale float64) {
+	y := float64(screenHeight) - groundY/scale
+	ebitenutil.DrawRect(dstImg, 0, y, float64(screenWidth), groundY/scale, groundSurfaceColor)
+	for _, m := range g.moutains {
+		g.drawMoutain(dstImg, m, scale, 1, groundY)
+	}
+}
+
+func (g *Ground) drawUnderground(dstImg *ebiten.Image, scale float64) {
+	for _, m := range g.moutains {
+		g.drawMoutain(dstImg, m, scale, 1.2, 0)
+	}
+}
+
+func (g *Ground) drawMoutain(screen *ebiten.Image, m *Mountain, scale, mountainScale, offsetY float64) {
+	w, h := moutainBaseImg.Size()
+	x := (m.StartX()-g.screenX)/scale + m.Width()*(1-1/mountainScale)/scale/2
+	y := float64(screenHeight) - offsetY/scale - m.Height()/scale/mountainScale
+
 	opts := &ebiten.DrawImageOptions{}
-	opts.GeoM.Scale(m.Width()/float64(w)/scale, m.Height()/float64(h)/scale)
-	x := (m.StartX() - g.screenX) / scale
-	y := float64(screenHeight) - groundY/scale - m.Height()/scale
+	opts.GeoM.Scale(m.Width()/float64(w)/scale/mountainScale, m.Height()/float64(h)/scale/mountainScale)
 	opts.GeoM.Translate(x, y)
-	screen.DrawImage(g.baseImg, opts)
+	screen.DrawImage(moutainBaseImg, opts)
 }
