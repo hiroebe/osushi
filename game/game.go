@@ -106,7 +106,7 @@ func (g *Game) drawScore(screen *ebiten.Image) {
 	}
 	for i, t := range texts {
 		x := screenWidth - fontSize*len(t)
-		y := fontSize * (i + 3)
+		y := fontSize * (i + 2)
 		text.Draw(screen, t, arcadeFont, x, y, color.Black)
 	}
 }
