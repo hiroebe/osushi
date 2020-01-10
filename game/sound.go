@@ -154,21 +154,18 @@ func NewWave(freq float64, f func(x, lambda float64) float64) *Wave {
 
 func (w *Wave) Read(buf []byte) (int, error) {
 	n := len(buf) / 4
-	p := w.pos / 4
 	for i := 0; i < n; i++ {
-		val := w.f(float64(p), float64(sampleRate)/w.freq)
+		val := w.f(float64(w.pos), float64(sampleRate)/w.freq)
 		b := int16(val * 0.3 * math.MaxInt16)
 		idx := i * 4
 		buf[idx] = byte(b)
 		buf[idx+1] = byte(b >> 8)
 		buf[idx+2] = byte(b)
 		buf[idx+3] = byte(b >> 8)
-		p++
+		w.pos++
 	}
 
-	w.pos += int64(n)
-
-	return n, nil
+	return n * 4, nil
 }
 
 func (w *Wave) Seek(offset int64, whence int) (int64, error) {
