@@ -42,17 +42,20 @@ func NewJumpSound() *JumpSound {
 }
 
 func (s *JumpSound) Start() {
-	s.player.Rewind()
-	s.player.SetVolume(0)
+	if s.player.Current() != 0 {
+		s.player.Rewind()
+	}
+
+	// Do not play sound for a short (< 100ms) jump
 	s.timer = time.AfterFunc(100*time.Millisecond, func() {
-		s.player.SetVolume(1)
+		s.player.Play()
 	})
-	s.player.Play()
 }
 
 func (s *JumpSound) Stop() {
-	s.timer.Stop()
-	s.player.Pause()
+	if !s.timer.Stop() {
+		s.player.Pause()
+	}
 }
 
 func (s *JumpSound) wave(freq float64) *Wave {
@@ -104,7 +107,9 @@ func (s *NewRecordSound) Update() {
 	if !ok {
 		p = s.createPlayer(freq)
 	}
-	p.Rewind()
+	if p.Current() != 0 {
+		p.Rewind()
+	}
 	p.Play()
 	time.AfterFunc(100*time.Millisecond, func() {
 		p.Pause()
