@@ -133,7 +133,7 @@ func (p *Player) land(grad, obl float64) {
 		p.vy = 0
 		return
 	}
-	if p.jumpLength > minMoutainWidth {
+	if p.jumpLength > minMountainWidth {
 		dv *= 1.1
 	}
 	p.vx = dv / obl
