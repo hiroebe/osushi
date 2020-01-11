@@ -197,14 +197,14 @@ func (g *Ground) drawGroundSurface(dstImg *ebiten.Image, scale float64) {
 	}
 }
 
-func (g *Ground) drawMountain(dstImg *ebiten.Image, m *Mountain, scale, mountainScale, offsetY float64) {
+func (g *Ground) drawMountain(dstImg *ebiten.Image, m *Mountain, scale, mtScale, offsetY float64) {
 	w, h := mountainBaseImg.Size()
-	x := (m.StartX()-g.screenX)*scale + m.Width()*(1-mountainScale)*scale/2
-	y := float64(screenHeight) - offsetY*scale - m.Height()*scale*mountainScale
+	x := (m.StartX()-g.screenX)*scale + m.Width()*(1-mtScale)*scale/2
+	y := float64(screenHeight) - offsetY*scale - m.Height()*scale*mtScale
 
 	opts := &ebiten.DrawImageOptions{}
 	opts.CompositeMode = ebiten.CompositeModeDestinationOver
-	opts.GeoM.Scale(m.Width()/float64(w)*scale*mountainScale, m.Height()/float64(h)*scale*mountainScale)
+	opts.GeoM.Scale(m.Width()/float64(w)*scale*mtScale, m.Height()/float64(h)*scale*mtScale)
 	opts.GeoM.Translate(x, y)
 	dstImg.DrawImage(mountainBaseImg, opts)
 }

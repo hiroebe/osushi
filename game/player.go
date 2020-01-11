@@ -2,6 +2,7 @@ package game
 
 import (
 	"image"
+	_ "image/png"
 	"log"
 	"math"
 	"net/http"
