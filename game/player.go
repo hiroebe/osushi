@@ -1,16 +1,10 @@
 package game
 
 import (
-	"image"
-	_ "image/png"
-	"log"
 	"math"
-	"net/http"
 
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/inpututil"
-	_ "github.com/hiroebe/osushi/game/statik"
-	"github.com/rakyll/statik/fs"
 )
 
 const (
@@ -19,41 +13,9 @@ const (
 	friction = 0.02
 )
 
-var (
-	gopherImageNormal     *ebiten.Image
-	gopherImageAcceralate *ebiten.Image
-	gopherImageFly1       *ebiten.Image
-	gopherImageFly2       *ebiten.Image
-)
-
-func init() {
-	statikFs, err := fs.New()
-	if err != nil {
-		log.Fatal(err)
-	}
-	gopherImageNormal = mustLoadImage(statikFs, "/gopher-normal.png")
-	gopherImageAcceralate = mustLoadImage(statikFs, "/gopher-acceralate.png")
-	gopherImageFly1 = mustLoadImage(statikFs, "/gopher-fly-1.png")
-	gopherImageFly2 = mustLoadImage(statikFs, "/gopher-fly-2.png")
-}
-
-func mustLoadImage(fs http.FileSystem, name string) *ebiten.Image {
-	f, err := fs.Open(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	img, _, err := image.Decode(f)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ebitenImg, err := ebiten.NewImageFromImage(img, ebiten.FilterDefault)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return ebitenImg
-}
-
 type Player struct {
+	jumpSound *JumpSound
+
 	x, y      float64
 	vx, vy    float64
 	isJumping bool
@@ -64,15 +26,9 @@ type Player struct {
 
 	img       *ebiten.Image
 	imgFrames int
-
-	sound *JumpSound
 }
 
 func (p *Player) Update(gy, grad float64) {
-	if p.sound == nil {
-		p.sound = NewJumpSound()
-	}
-
 	obl := math.Sqrt(1 + grad*grad)
 
 	p.updateV(grad, obl)
@@ -115,7 +71,7 @@ func (p *Player) updateV(grad, obl float64) {
 }
 
 func (p *Player) jump(grad, obl float64) {
-	p.sound.Start()
+	p.jumpSound.Start()
 
 	p.isJumping = true
 	p.jumpStartX = p.x
@@ -124,7 +80,7 @@ func (p *Player) jump(grad, obl float64) {
 }
 
 func (p *Player) land(grad, obl float64) {
-	p.sound.Stop()
+	p.jumpSound.Stop()
 
 	p.isJumping = false
 

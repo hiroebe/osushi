@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	groundY           = 16
 	minMountainWidth  = 200
 	minMountainHeight = 100
 	maxMountainWidth  = 500

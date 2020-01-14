@@ -3,22 +3,18 @@ package game
 import (
 	"fmt"
 	"image/color"
-	"log"
 	"math/rand"
 	"time"
 
-	"github.com/golang/freetype/truetype"
 	"github.com/hajimehoshi/ebiten"
 	"github.com/hajimehoshi/ebiten/ebitenutil"
-	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/text"
-	"golang.org/x/image/font"
 )
 
 const (
 	fontSize     = 16
+	iconSize     = 32
 	playerOffset = 64
-	groundY      = 16
 )
 
 var (
@@ -26,25 +22,57 @@ var (
 	screenHeight int
 )
 
-var arcadeFont font.Face
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
 
-	tt, err := truetype.Parse(fonts.ArcadeN_ttf)
-	if err != nil {
-		log.Fatal(err)
+type volumeSetter interface {
+	SetVolume(volume float64)
+}
+
+type soundIcon struct {
+	setters []volumeSetter
+	isMuted bool
+}
+
+func (i *soundIcon) Draw(screen *ebiten.Image, x, y, w, h int) {
+	imgW, imgH := i.Size()
+	opts := &ebiten.DrawImageOptions{}
+	opts.GeoM.Scale(float64(w)/float64(imgW), float64(h)/float64(imgH))
+	opts.GeoM.Translate(float64(x), float64(y))
+	screen.DrawImage(i.img(), opts)
+}
+
+func (i *soundIcon) Size() (w, h int) {
+	return i.img().Size()
+}
+
+func (i *soundIcon) OnClick() {
+	i.setMuted(!i.isMuted)
+}
+
+func (i *soundIcon) setMuted(muted bool) {
+	i.isMuted = muted
+	var volume float64
+	if !i.isMuted {
+		volume = 1
 	}
-	arcadeFont = truetype.NewFace(tt, &truetype.Options{
-		Size:    fontSize,
-		DPI:     72,
-		Hinting: font.HintingFull,
-	})
+	for _, setter := range i.setters {
+		setter.SetVolume(volume)
+	}
+}
+
+func (i *soundIcon) img() *ebiten.Image {
+	if i.isMuted {
+		return soundIconOff
+	}
+	return soundIconOn
 }
 
 type Game struct {
 	player           *Player
 	ground           *Ground
+	soundIcon        Element
 	scale            float64
 	jumpHeightRecord int
 	jumpLendthRecord int
@@ -53,11 +81,24 @@ type Game struct {
 }
 
 func NewGame() (*Game, error) {
+	jumpSound := NewJumpSound()
+	newRecordSound := NewNewRecordSound()
+
+	soundIcon := &soundIcon{
+		setters: []volumeSetter{jumpSound, newRecordSound},
+	}
+	soundIcon.setMuted(true)
+	soundIconElem := NewElement(soundIcon)
+	soundIconElem.SetSize(iconSize, iconSize)
+
 	return &Game{
-		player:         &Player{},
+		player: &Player{
+			jumpSound: jumpSound,
+		},
 		ground:         &Ground{},
+		soundIcon:      soundIconElem,
 		scale:          1,
-		newRecordSound: NewNewRecordSound(),
+		newRecordSound: newRecordSound,
 	}, nil
 }
 
@@ -68,6 +109,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 		g.scale = 1
 	}
 	g.ground.Update(g.player.x-playerOffset, g.scale)
+	g.soundIcon.Update()
 	g.updateRecord()
 
 	if ebiten.IsDrawingSkipped() {
@@ -77,6 +119,7 @@ func (g *Game) Update(screen *ebiten.Image) error {
 	screen.Fill(color.White)
 	g.ground.Draw(screen, g.scale)
 	g.player.Draw(screen, g.scale)
+	g.soundIcon.Draw(screen)
 	g.drawScore(screen)
 
 	// ebitenutil.DebugPrint(screen, fmt.Sprintf("FPS: %0.2f", ebiten.CurrentFPS()))
@@ -106,7 +149,7 @@ func (g *Game) drawScore(screen *ebiten.Image) {
 	}
 	for i, t := range texts {
 		x := screenWidth - fontSize*len(t)
-		y := fontSize * (i + 2)
+		y := fontSize*(i+1) + iconSize
 		text.Draw(screen, t, arcadeFont, x, y, color.Black)
 	}
 }
@@ -114,5 +157,6 @@ func (g *Game) drawScore(screen *ebiten.Image) {
 func (g *Game) Layout(outsideWidth, outsideHeight int) (w, h int) {
 	screenWidth = outsideWidth
 	screenHeight = outsideHeight
+	g.soundIcon.SetPosition(screenWidth-iconSize, 0)
 	return screenWidth, screenHeight
 }

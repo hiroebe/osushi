@@ -58,6 +58,10 @@ func (s *JumpSound) Stop() {
 	}
 }
 
+func (s *JumpSound) SetVolume(volume float64) {
+	s.player.SetVolume(volume)
+}
+
 func (s *JumpSound) wave(freq float64) *Wave {
 	p0 := 0.15
 	p1 := 0.3
@@ -84,6 +88,7 @@ type NewRecordSound struct {
 	freqIdx int
 	octave  int
 	players map[float64]*audio.Player
+	volume  float64
 }
 
 func NewNewRecordSound() *NewRecordSound {
@@ -91,6 +96,7 @@ func NewNewRecordSound() *NewRecordSound {
 		freqIdx: 0,
 		octave:  1,
 		players: make(map[float64]*audio.Player, 32),
+		volume:  1,
 	}
 	for _, freq := range baseFreq {
 		for i := 1; i <= 3; i++ {
@@ -127,12 +133,20 @@ func (s *NewRecordSound) Reset() {
 	s.octave = 1
 }
 
+func (s *NewRecordSound) SetVolume(volume float64) {
+	for _, p := range s.players {
+		p.SetVolume(volume)
+	}
+	s.volume = volume
+}
+
 func (s *NewRecordSound) createPlayer(freq float64) *audio.Player {
 	p, err := audio.NewPlayer(audio.CurrentContext(), s.wave(freq))
 	if err != nil {
 		log.Println(err)
 		return nil
 	}
+	p.SetVolume(s.volume)
 
 	s.players[freq] = p
 	return p
