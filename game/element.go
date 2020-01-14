@@ -29,9 +29,10 @@ func NewElement(impl ElementImpl) Element {
 type ElementBase struct {
 	impl ElementImpl
 
-	x, y    int
-	w, h    int
-	touchID int
+	x, y     int
+	w, h     int
+	touchID  int
+	touching bool
 }
 
 func (e *ElementBase) Update() {
@@ -40,11 +41,7 @@ func (e *ElementBase) Update() {
 		x, y := ebiten.TouchPosition(id)
 		if e.isInside(x, y) {
 			e.touchID = id
-		}
-	}
-	if e.touchID > 0 {
-		if !e.isInside(ebiten.TouchPosition(e.touchID)) {
-			e.touchID = 0
+			e.touching = true
 		}
 	}
 	if inpututil.IsMouseButtonJustReleased(ebiten.MouseButtonLeft) {
@@ -53,9 +50,16 @@ func (e *ElementBase) Update() {
 			e.impl.OnClick()
 		}
 	}
+	if !e.touching {
+		return
+	}
 	if inpututil.IsTouchJustReleased(e.touchID) {
 		e.impl.OnClick()
-		e.touchID = 0
+		e.touching = false
+		return
+	}
+	if !e.isInside(ebiten.TouchPosition(e.touchID)) {
+		e.touching = false
 	}
 }
 
